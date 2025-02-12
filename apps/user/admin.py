@@ -1,6 +1,7 @@
 from os import path
 from django.contrib import admin
-from .models import Lote,Categoria,TipoEvento,Evento,Camisas
+from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento
+from django.db.models import Sum
 
 
 
@@ -56,3 +57,22 @@ class CamisasAdmin(admin.ModelAdmin):
     ordering = ['-id']
 
 admin.site.register(Camisas, CamisasAdmin)
+
+
+class PlanejamentoAdmin(admin.ModelAdmin):
+    
+    list_display = [
+        "descricao",
+        "valor_planejado",        
+        "valor_pago",
+    ]
+    ordering = ['-id']
+    change_list_template = "congressita/change_list_planejamento.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        total_valor_planejado = Planejamento.objects.aggregate(Sum('valor_planejado'))['valor_planejado__sum'] or 0
+        extra_context['total_valor_planejado'] = total_valor_planejado
+        return super(PlanejamentoAdmin, self).changelist_view(request, extra_context=extra_context)
+
+admin.site.register(Planejamento, PlanejamentoAdmin)

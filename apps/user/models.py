@@ -65,3 +65,15 @@ class Camisas(models.Model):
         return self.descricao    
     class Meta:
         ordering = ['-id']
+
+
+class Planejamento(models.Model):
+    descricao = models.CharField(max_length=100)   
+    valor_planejado = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
+    valor_pago = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)   
+      
+
+    def __str__(self):
+        return self.descricao    
+    class Meta:
+        ordering = ['-id']
