@@ -56,7 +56,10 @@ JAZZMIN_SETTINGS = {
             'user.CadastroGerais': 'fas fa-book'
 
     },
-"order_with_respect_to": ["usuario","congressista","categoria","lote"]
+    "order_with_respect_to": [
+        "profissionais", "inscricao", "evento", "planejamento",
+        "lote", "categoria", "camisa", "tipo_evento"
+    ]
 }
 
 

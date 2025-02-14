@@ -7,7 +7,7 @@ class Lote(models.Model):
     status = models.CharField(max_length=10, choices=[('ativo', 'Ativo'), ('encerrado', 'Encerrado')], default='ativo')
 
     def __str__(self):
-        return self.descricao
+        return f"{self.descricao} - {self.status}"
     class Meta:
         ordering = ['-id']
     
@@ -75,5 +75,31 @@ class Planejamento(models.Model):
 
     def __str__(self):
         return self.descricao    
+    class Meta:
+        ordering = ['-id']
+
+class Profissional(models.Model):
+    nome= models.CharField(max_length=100)
+    funcao = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    cache = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
+    jack_jill = models.BooleanField(default=False,verbose_name= 'Jack & Jill',null=True,blank=True)
+    barco = models.BooleanField(default=False,verbose_name= 'Barco',null=True,blank=True)
+
+    @property
+    def barco_com_quantidade_pessoas(self):
+        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
+        return evento.quantidade_pessoas if evento else 0
+
+    def save(self, *args, **kwargs):
+        if self.barco:
+            evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
+            if evento and evento.quantidade_pessoas > 0:
+                evento.quantidade_pessoas -= 1
+                evento.save()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.nome} - {self.funcao}"
+    
     class Meta:
         ordering = ['-id']
