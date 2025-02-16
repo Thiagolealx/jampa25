@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class Lote(models.Model):
     descricao = models.CharField(max_length=255)
@@ -79,11 +80,11 @@ class Planejamento(models.Model):
         ordering = ['-id']
 
 class Profissional(models.Model):
-    nome= models.CharField(max_length=100)
+    nome = models.CharField(max_length=100)
     funcao = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    cache = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
-    jack_jill = models.BooleanField(default=False,verbose_name= 'Jack & Jill',null=True,blank=True)
-    barco = models.BooleanField(default=False,verbose_name= 'Barco',null=True,blank=True)
+    cache = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    jack_jill = models.BooleanField(default=False, verbose_name='Jack & Jill', null=True, blank=True)
+    barco = models.BooleanField(default=False, verbose_name='Barco', null=True, blank=True)
 
     @property
     def barco_com_quantidade_pessoas(self):
@@ -91,11 +92,13 @@ class Profissional(models.Model):
         return evento.quantidade_pessoas if evento else 0
 
     def save(self, *args, **kwargs):
+        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
         if self.barco:
-            evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
             if evento and evento.quantidade_pessoas > 0:
                 evento.quantidade_pessoas -= 1
                 evento.save()
+            else:
+                raise ValidationError("Não há vagas disponíveis no barco.")
         super().save(*args, **kwargs)
 
     def __str__(self):

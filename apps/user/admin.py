@@ -1,13 +1,13 @@
 from os import path
 from django.contrib import admin
 from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional
-
+from .forms import ProfissionalForm
 from django.db.models import Sum
 
 
 
 class LoteAdmin(admin.ModelAdmin):
-
+    
     list_display = [
         "descricao",
         "valor_unitario",
@@ -90,7 +90,7 @@ class PlanejamentoAdmin(admin.ModelAdmin):
 admin.site.register(Planejamento, PlanejamentoAdmin)
 
 class ProfissionalAdmin(admin.ModelAdmin):
-    
+    form = ProfissionalForm
     list_display = [
         "nome",
         "funcao",
@@ -99,6 +99,8 @@ class ProfissionalAdmin(admin.ModelAdmin):
         "barco_com_quantidade_pessoas"
     ]
     ordering = ['-id']
-    search_fields = ['nome', 'profissao']
+    search_fields = ['nome', 'funcao__nome']
+    # change_form_template = "congressita/change_forms_profissional.html"
+
 
 admin.site.register(Profissional, ProfissionalAdmin)
