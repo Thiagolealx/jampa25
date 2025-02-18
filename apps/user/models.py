@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -135,7 +136,7 @@ class Inscricao(models.Model):
     nome = models.CharField(max_length=100)
     cpf = models.CharField(max_length=11)
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    ano = models.IntegerField()
+    ano = models.IntegerField(editable=False)
     cep = models.CharField("CEP", max_length=9, blank=True, null=True,
                            help_text="Digite um CEP válido para atualizar os campos abaixo.")  
     cidade = models.CharField(
@@ -146,9 +147,13 @@ class Inscricao(models.Model):
     lote = models.ForeignKey(Lote, on_delete=models.CASCADE)
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
 
-   
+    def save(self, *args, **kwargs):
+        if not self.ano:
+            self.ano = datetime.now().year
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.nome
+        return f"{self.nome} - {self.cpf}"
 
     class Meta:
         ordering = ['-id']

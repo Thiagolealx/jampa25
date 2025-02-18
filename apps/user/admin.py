@@ -123,7 +123,7 @@ class InscricaoAdmin(admin.ModelAdmin):
     list_filter = ['categoria', 'lote', 'evento']
     fieldsets = (
         ('Cadastro', {
-            'fields': ('nome', 'cpf', 'categoria')
+            'fields': ('nome', 'cpf', 'categoria', 'cep', 'cidade', 'uf')
         }),
         ('Pagamentos', {
             'fields': ('lote', 'evento')
