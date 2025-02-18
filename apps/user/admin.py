@@ -50,7 +50,8 @@ class EventoAdmin(admin.ModelAdmin):
         "valor_planejado",
         "valor_arrecadado",
         "valor_do_evento",
-        "quantidade_pessoas"
+        "quantidade_pessoas",
+        "contador_barco"
     ]
     ordering = ['-id']
     search_fields = ['descricao', 'tipo', 'data',]
@@ -96,11 +97,18 @@ class ProfissionalAdmin(admin.ModelAdmin):
         "funcao",
         "cache",
         "jack_jill",
-        "barco_com_quantidade_pessoas"
+        # "barco_com_quantidade_pessoas"
     ]
     ordering = ['-id']
     search_fields = ['nome', 'funcao__nome']
     # change_form_template = "congressita/change_forms_profissional.html"
+    def delete_queryset(self, request, queryset):
+        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
+        barco_count = queryset.filter(barco=True).count()
+        if evento:
+            evento.contador_barco -= barco_count
+            evento.save()
+        queryset.delete()
 
 
 admin.site.register(Profissional, ProfissionalAdmin)

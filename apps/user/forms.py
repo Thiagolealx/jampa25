@@ -44,5 +44,8 @@ class ProfissionalForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
-        quantidade_pessoas = evento.quantidade_pessoas if evento else 0
-        self.fields['barco'].help_text = f'<span style="font-size: 1.5em;">Vagas disponíveis: {quantidade_pessoas}</span>'
+        if evento:
+            vagas_disponiveis = evento.quantidade_pessoas - evento.contador_barco
+            self.fields['barco'].help_text = f'<span style="font-size: 1.5em;">Vagas disponíveis: {vagas_disponiveis}</span>'
+        else:
+            self.fields['barco'].help_text = '<span style="font-size: 1.5em;">Evento não encontrado.</span>'

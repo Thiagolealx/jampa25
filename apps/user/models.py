@@ -36,7 +36,8 @@ class Evento(models.Model):
     valor_planejado = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     valor_arrecadado = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     quantidade_pessoas = models.IntegerField(null=True,blank=True)
-   
+    contador_barco = models.IntegerField(default=0,editable=False,verbose_name="Vagas preenchidas ")
+
     @property
     def valor_do_evento(self):
         valor_arrecadado = self.valor_arrecadado or 0
@@ -47,6 +48,7 @@ class Evento(models.Model):
         return self.descricao    
     class Meta:
         ordering = ['-id']
+
 class Camisas(models.Model):
 
     TAMANHO = (
@@ -79,6 +81,7 @@ class Planejamento(models.Model):
     class Meta:
         ordering = ['-id']
 
+
 class Profissional(models.Model):
     nome = models.CharField(max_length=100)
     funcao = models.ForeignKey(Categoria, on_delete=models.CASCADE)
@@ -86,20 +89,35 @@ class Profissional(models.Model):
     jack_jill = models.BooleanField(default=False, verbose_name='Jack & Jill', null=True, blank=True)
     barco = models.BooleanField(default=False, verbose_name='Barco', null=True, blank=True)
 
-    @property
-    def barco_com_quantidade_pessoas(self):
-        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
-        return evento.quantidade_pessoas if evento else 0
-
     def save(self, *args, **kwargs):
         evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
-        if self.barco:
-            if evento and evento.quantidade_pessoas > 0:
-                evento.quantidade_pessoas -= 1
+        if not evento:
+            raise ValidationError("Evento não encontrado.")
+        
+        # Verificar se a instância já existe no banco de dados
+        if self.pk:
+            old_instance = Profissional.objects.get(pk=self.pk)
+            if old_instance.barco and not self.barco:
+                # Se o campo barco foi desmarcado, decrementar o contador
+                evento.contador_barco -= 1
+                evento.save()
+        
+        if self.barco and (not self.pk or (self.pk and not old_instance.barco)):
+            if evento.contador_barco < evento.quantidade_pessoas:
+                evento.contador_barco += 1
                 evento.save()
             else:
                 raise ValidationError("Não há vagas disponíveis no barco.")
+        
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
+        if self.barco and evento:
+            if evento.contador_barco > 0:
+                evento.contador_barco -= 1
+                evento.save()
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"{self.nome} - {self.funcao}"
