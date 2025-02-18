@@ -1,7 +1,8 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.forms import TextInput
-from .models import Profissional, Evento, Inscricao
+from django.forms import inlineformset_factory
+from .models import Profissional, Evento, Inscricao, InscricaoEvento
 
 # from .models import Congressista
 # class CongressistaFormAdmin(forms.ModelForm):
@@ -70,4 +71,6 @@ class InscricaoStep1Form(forms.ModelForm):
 class InscricaoStep2Form(forms.ModelForm):
     class Meta:
         model = Inscricao
-        fields = ['lote', 'evento']
+        fields = ['lote']
+
+InscricaoEventoFormSet = inlineformset_factory(Inscricao, InscricaoEvento, fields=('evento', 'confirmar'), extra=1)

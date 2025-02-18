@@ -1,9 +1,8 @@
 from os import path
 from django.contrib import admin
-from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao
+from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento
 from .forms import ProfissionalForm
 from django.db.models import Sum
-
 
 
 class LoteAdmin(admin.ModelAdmin):
@@ -112,20 +111,21 @@ class ProfissionalAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Profissional, ProfissionalAdmin)
-
-from django.contrib import admin
-from .models import Inscricao
+class InscricaoEventoInline(admin.TabularInline):
+    model = InscricaoEvento
+    extra = 1
 
 @admin.register(Inscricao)
 class InscricaoAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'cpf', 'categoria', 'lote', 'evento']
+    list_display = ['nome', 'categoria', 'lote','eventos_cadastrados']
     search_fields = ['nome', 'cpf']
-    list_filter = ['categoria', 'lote', 'evento']
+    list_filter = ['categoria', 'lote']
     fieldsets = (
         ('Cadastro', {
-            'fields': ('nome', 'cpf', 'categoria', 'cep', 'cidade', 'uf')
+            'fields': ('nome', 'cpf', 'categoria', 'cep', 'cidade', 'uf','lote')
         }),
-        ('Pagamentos', {
-            'fields': ('lote', 'evento')
-        }),
+      
     )
+    inlines = [InscricaoEventoInline]
+
+

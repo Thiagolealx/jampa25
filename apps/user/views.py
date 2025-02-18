@@ -28,10 +28,29 @@ TEMPLATES = {"step1": "user/inscricao_step1.html",
              "step2": "user/inscricao_step2.html"}
 
 class InscricaoWizard(SessionWizardView):
-    form_list = FORMS  # Certifique-se de que FORMS é uma lista de formulários
+    form_list = FORMS
 
     def get_template_names(self):
         return [TEMPLATES[self.steps.current]]
+
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form=form, **kwargs)
+        if self.steps.current == 'step2':
+            context.update({
+                'eventos_formset': kwargs.get('eventos_formset', InscricaoEventoFormSet(queryset=InscricaoEvento.objects.none()))
+            })
+        return context
+
+    def post(self, *args, **kwargs):
+        self.object = self.get_form_instance()
+        form = self.get_form(data=self.request.POST, files=self.request.FILES)
+        if self.steps.current == 'step2':
+            eventos_formset = InscricaoEventoFormSet(self.request.POST, queryset=InscricaoEvento.objects.none())
+            if form.is_valid() and eventos_formset.is_valid():
+                return self.render_done(form, eventos_formset)
+            else:
+                return self.render(form, eventos_formset=eventos_formset)
+        return super().post(*args, **kwargs)
 
     def done(self, form_list, **kwargs):
         form_data = [form.cleaned_data for form in form_list]

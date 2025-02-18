@@ -145,15 +145,27 @@ class Inscricao(models.Model):
 
     # Step 2
     lote = models.ForeignKey(Lote, on_delete=models.CASCADE)
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    
 
     def save(self, *args, **kwargs):
         if not self.ano:
             self.ano = datetime.now().year
         super().save(*args, **kwargs)
+    
+    def eventos_cadastrados(self):
+        return ", ".join([str(evento.evento.descricao) for evento in self.inscricaoevento_set.all()])
+
 
     def __str__(self):
         return f"{self.nome} - {self.cpf}"
 
     class Meta:
         ordering = ['-id']
+
+class InscricaoEvento(models.Model):
+    inscricao = models.ForeignKey(Inscricao, on_delete=models.CASCADE)
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    confirmar = models.BooleanField(default=False, verbose_name="Confirmar Evento")
+
+    def __str__(self):
+        return f"{self.inscricao.nome} - {self.evento.descricao} - {'Sim' if self.confirmar else 'Não'}"

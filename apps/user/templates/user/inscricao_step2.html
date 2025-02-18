@@ -1,3 +1,4 @@
+<!-- filepath: /home/tyhb/Documentos/Projetos/jampa25/apps/user/templates/user/inscricao_step2.html -->
 {% extends "base_generic.html" %}
 
 {% block content %}
@@ -6,6 +7,16 @@
     {% csrf_token %}
     {{ wizard.management_form }}
     {{ wizard.form.as_p }}
+    
+    <h2>Eventos</h2>
+    <div id="eventos">
+      {% for form in eventos_formset.forms %}
+        <div class="evento-form">
+          {{ form.as_p }}
+        </div>
+      {% endfor %}
+    </div>
+    
     <button type="submit">Próximo</button>
   </form>
 {% endblock %}
