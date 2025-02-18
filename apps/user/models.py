@@ -89,10 +89,18 @@ class Profissional(models.Model):
     jack_jill = models.BooleanField(default=False, verbose_name='Jack & Jill', null=True, blank=True)
     barco = models.BooleanField(default=False, verbose_name='Barco', null=True, blank=True)
 
-    def save(self, *args, **kwargs):
+    def clean(self):
         evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
         if not evento:
             raise ValidationError("Evento não encontrado.")
+        
+        if self.barco:
+            if evento.contador_barco >= evento.quantidade_pessoas:
+                raise ValidationError("Não há vagas disponíveis no barco.")
+
+    def save(self, *args, **kwargs):
+        self.clean()  # Chama o método clean para validação
+        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
         
         # Verificar se a instância já existe no banco de dados
         if self.pk:
@@ -103,11 +111,8 @@ class Profissional(models.Model):
                 evento.save()
         
         if self.barco and (not self.pk or (self.pk and not old_instance.barco)):
-            if evento.contador_barco < evento.quantidade_pessoas:
-                evento.contador_barco += 1
-                evento.save()
-            else:
-                raise ValidationError("Não há vagas disponíveis no barco.")
+            evento.contador_barco += 1
+            evento.save()
         
         super().save(*args, **kwargs)
 
