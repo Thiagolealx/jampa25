@@ -129,3 +129,26 @@ class Profissional(models.Model):
     
     class Meta:
         ordering = ['-id']
+
+class Inscricao(models.Model):
+    # Step 1
+    nome = models.CharField(max_length=100)
+    cpf = models.CharField(max_length=11)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    ano = models.IntegerField()
+    cep = models.CharField("CEP", max_length=9, blank=True, null=True,
+                           help_text="Digite um CEP válido para atualizar os campos abaixo.")  
+    cidade = models.CharField(
+        "Município", max_length=100, blank=True, null=True)
+    uf = models.CharField("UF", max_length=2, blank=True,null=True)
+
+    # Step 2
+    lote = models.ForeignKey(Lote, on_delete=models.CASCADE)
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+
+   
+    def __str__(self):
+        return self.nome
+
+    class Meta:
+        ordering = ['-id']

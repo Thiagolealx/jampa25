@@ -1,6 +1,6 @@
 from os import path
 from django.contrib import admin
-from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional
+from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao
 from .forms import ProfissionalForm
 from django.db.models import Sum
 
@@ -79,7 +79,7 @@ class PlanejamentoAdmin(admin.ModelAdmin):
         "valor_pago",
     ]
     ordering = ['-id']
-    change_list_template = "congressita/change_list_planejamento.html"
+    change_list_template = "user/change_list_planejamento.html"
     search_fields = ['descricao']
 
     def changelist_view(self, request, extra_context=None):
@@ -112,3 +112,20 @@ class ProfissionalAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Profissional, ProfissionalAdmin)
+
+from django.contrib import admin
+from .models import Inscricao
+
+@admin.register(Inscricao)
+class InscricaoAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'cpf', 'categoria', 'lote', 'evento']
+    search_fields = ['nome', 'cpf']
+    list_filter = ['categoria', 'lote', 'evento']
+    fieldsets = (
+        ('Cadastro', {
+            'fields': ('nome', 'cpf', 'categoria')
+        }),
+        ('Pagamentos', {
+            'fields': ('lote', 'evento')
+        }),
+    )

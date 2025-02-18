@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.forms import TextInput
-from .models import Profissional, Evento
+from .models import Profissional, Evento, Inscricao
 
 # from .models import Congressista
 # class CongressistaFormAdmin(forms.ModelForm):
@@ -49,3 +49,25 @@ class ProfissionalForm(forms.ModelForm):
             self.fields['barco'].help_text = f'<span style="font-size: 1.5em;">Vagas disponíveis: {vagas_disponiveis}</span>'
         else:
             self.fields['barco'].help_text = '<span style="font-size: 1.5em;">Evento não encontrado.</span>'
+    
+    # def clean(self):
+    #     evento = Evento.objects.first()
+    #     if not evento:
+    #         raise forms.ValidationError("Evento não encontrado.")
+    
+    #     if self.cleaned_data.get('barco'):
+    #         if evento.contador_barco >= evento.quantidade_pessoas:
+    #             raise forms.ValidationError("Não há vagas disponíveis no barco.")
+    #     return self.cleaned_data
+
+
+
+class InscricaoStep1Form(forms.ModelForm):
+    class Meta:
+        model = Inscricao
+        fields = ['nome', 'cpf', 'categoria']
+
+class InscricaoStep2Form(forms.ModelForm):
+    class Meta:
+        model = Inscricao
+        fields = ['lote', 'evento']

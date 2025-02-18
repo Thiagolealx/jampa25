@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Inscrição Concluída</h1>
+  <p>Obrigado por se inscrever!</p>
+  <ul>
+    {% for form in form_data %}
+      {% for key, value in form.items %}
+        <li>{{ key }}: {{ value }}</li>
+      {% endfor %}
+    {% endfor %}
+  </ul>
+{% endblock %}
