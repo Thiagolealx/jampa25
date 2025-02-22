@@ -169,3 +169,42 @@ class InscricaoEvento(models.Model):
 
     def __str__(self):
         return f"{self.inscricao.nome} - {self.evento.descricao} - {'Sim' if self.confirmar else 'Não'}"
+
+
+class Entradas(models.Model):
+    descricao = models.CharField(max_length=100, null=True, blank=True)
+    valor_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    quantidade = models.IntegerField(null=True, blank=True)
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    data = models.DateField(auto_now_add=True)
+
+    def calcular_valor_total(self):
+        if self.valor_unitario is not None and self.quantidade is not None:
+            return self.valor_unitario * self.quantidade
+        return 0
+
+    def save(self, *args, **kwargs):        
+        self.valor_total = self.calcular_valor_total()  # Corrigido aqui
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.descricao
+
+class Saidas(models.Model):
+    descricao = models.CharField(max_length=100, null=True, blank=True)
+    valor_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    quantidade = models.IntegerField(null=True, blank=True)
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    data = models.DateField(auto_now_add=True)
+
+    def calcular_valor_total(self):
+        if self.valor_unitario is not None and self.quantidade is not None:
+            return self.valor_unitario * self.quantidade
+        return 0
+
+    def save(self, *args, **kwargs):        
+        self.valor_total = self.calcular_valor_total()  # Corrigido aqui
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.descricao

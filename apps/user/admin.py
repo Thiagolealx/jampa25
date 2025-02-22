@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento
 from .forms import ProfissionalForm
 from django.db.models import Sum
+from .forms import InscricaoFormAdmin
 
 
 class LoteAdmin(admin.ModelAdmin):
@@ -117,6 +118,7 @@ class InscricaoEventoInline(admin.TabularInline):
 
 @admin.register(Inscricao)
 class InscricaoAdmin(admin.ModelAdmin):
+    form = InscricaoFormAdmin
     list_display = ['nome', 'categoria', 'lote','eventos_cadastrados']
     search_fields = ['nome', 'cpf']
     list_filter = ['categoria', 'lote']
@@ -127,5 +129,24 @@ class InscricaoAdmin(admin.ModelAdmin):
       
     )
     inlines = [InscricaoEventoInline]
+    change_form_template = "user/change_form_inscricao.html"
+    
+    
+from django.contrib import admin
+from .models import Entradas, Saidas
 
+class EntradasAdmin(admin.ModelAdmin):
+    list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total', 'data']
+    search_fields = ['descricao']
+    list_filter = ['data']
+    change_list_template = "user/change_list_entradas.html"
 
+class SaidasAdmin(admin.ModelAdmin):
+    list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total', 'data']
+    search_fields = ['descricao']
+    list_filter = ['data']
+    change_list_template = "user/change_list_saidas.html"
+
+# Registrando os modelos no Admin
+admin.site.register(Entradas, EntradasAdmin)
+admin.site.register(Saidas, SaidasAdmin)

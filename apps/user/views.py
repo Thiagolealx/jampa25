@@ -1,8 +1,31 @@
 from django.db.models import Sum
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from formtools.wizard.views import SessionWizardView # type: ignore
 from .forms import InscricaoStep1Form, InscricaoStep2Form
 from apps.user import forms
+from .models import Inscricao
+
+@require_http_methods(['GET'])
+def buscar_dados_cpf(request, cpf):
+    try:
+        inscricao = Inscricao.objects.filter(cpf=cpf).first()
+        if inscricao:
+            return JsonResponse({
+                'success': True,
+                'cidade': inscricao.cidade,
+                'uf': inscricao.uf
+            })
+        return JsonResponse({
+            'success': False,
+            'error': 'CPF não encontrado no sistema'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Erro ao buscar dados: {str(e)}'
+        })
 
 # def caixa_view(request):
 #     total_parcelas = Congressista.objects.aggregate(total_parcelas=Sum('get_total_parcelas'))['total_parcelas'] or 0
