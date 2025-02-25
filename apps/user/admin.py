@@ -1,6 +1,6 @@
 from os import path
 from django.contrib import admin
-from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento
+from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento, Pagamento
 from .forms import ProfissionalForm
 from django.db.models import Sum
 from .forms import InscricaoFormAdmin
@@ -156,3 +156,24 @@ class SaidasAdmin(admin.ModelAdmin):
 # Registrando os modelos no Admin
 admin.site.register(Entradas, EntradasAdmin)
 admin.site.register(Saidas, SaidasAdmin)
+class PagamentoAdmin(admin.ModelAdmin):
+    list_display = ['inscricao', 'parcela', 'valor_pago', 'data_pagamento', 'valor_parcela']
+    search_fields = ['inscricao__nome']
+    list_filter = ['parcela']
+    readonly_fields = ['valor_parcela']  # Adiciona o campo valor_parcela como somente leitura
+
+    def valor_parcela(self, obj):
+        if obj and obj.inscricao:
+            return obj.inscricao.calcular_parcela()  # Chama o método para calcular o valor da parcela
+        return 0  # Retorna 0 se não houver objeto ou inscrição
+
+    valor_parcela.short_description = 'Valor da Parcela'  # Título da coluna na interface admin
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if obj:  # Se estamos editando um pagamento existente
+            form.base_fields['valor_pago'].initial = obj.inscricao.calcular_parcela()  # Preencher com o valor da parcela
+            form.base_fields['valor_parcela'] = self.valor_parcela(obj)  # Adiciona o valor da parcela ao formulário
+        return form
+
+admin.site.register(Pagamento, PagamentoAdmin)
