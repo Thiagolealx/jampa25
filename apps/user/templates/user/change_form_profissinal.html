@@ -1,36 +1,9 @@
+<!-- filepath: /home/tyhb/Documentos/Projetos/jampa25/apps/user/templates/congressita/change_forms_profissional.html -->
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static admin_modify jazzmin %}
 {% get_jazzmin_settings request as jazzmin_settings %}
 
-
 {% block extrahead %}
-<script src="{% static '/jquery.js' %}"></script>
-<script>
-    $(document).ready(function() {
-    $("#id_cep").keyup(function() {
-        if ($("#id_cep").val().length == 9) {
-            var cep = $(this).val().replace(/[^0-9]/, '');
-            if (cep) {
-                var url = 'https://viacep.com.br/ws/'+cep+'/json/';
-                $.ajax({
-                        url: url,
-                        dataType: 'jsonp',
-                        crossDomain: true,
-                        contentType: "application/json",
-                        success : function(json){
-                            if(json.logradouro){
-                                $("#id_logradouro").val(json.logradouro);
-                                $("#id_bairro").val(json.bairro);
-                                $("#id_cidade").val(json.localidade);
-                                $("#id_uf").val(json.uf);
-                            }
-                        }
-                });
-            }
-        }
-    });
-});
-</script>
     {{ block.super }}
     <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
     {{ media }}
@@ -66,7 +39,6 @@
 {% block content_title %} {{ opts.verbose_name_plural|capfirst }} {% endblock %}
 
 {% block content %}
-
     <div id="content-main" class="col-12">
         <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>
             {% csrf_token %}
@@ -94,33 +66,26 @@
 
                 {% block field_sets %}
                     <div class="col-15 col-lg-9">
-
                         <div class="card">
                             <div class="card-body">
-
                                 {% get_changeform_template adminform as changeform_template %}
                                 {% if change %}
-                        <div class="d-flex justify-content-left">
-
-                        </div>
-                        {% endif %}
-
+                                    <div class="d-flex justify-content-left">
+                                    </div>
+                                {% endif %}
                                 {% include changeform_template %}
                             </div>
-
                         </div>
                     </div>
                 {% endblock %}
 
                 {% block after_field_sets %}{% endblock %}
-
                 {% block inline_field_sets %}{% endblock %}
-
                 {% block after_related_objects %}{% endblock %}
 
                 <div class="col-12 col-lg-3">
                     <div id="jazzy-actions" class="{{ jazzmin_ui.actions_classes }}">
-                            {% block submit_buttons_bottom %}
+                        {% block submit_buttons_bottom %}
                             {% submit_row %}
                             {% block object-tools %}
                                 {% if change %}
@@ -146,6 +111,4 @@
             </div>
         </form>
     </div>
-
 {% endblock %}
-

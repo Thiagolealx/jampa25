@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls static admin_list jazzmin %}
+{% load i18n admin_urls static admin_list jazzmin humanize custom_filters %}
 
 {% block extrastyle %}
     {{ block.super }}
@@ -35,16 +35,15 @@
 
 {% block coltype %}flex{% endblock %}
 
-    {% block page_actions %}
-        <div class="col-12 col-md-auto d-flex align-items-center justify-content-end page-actions">
-            {% block object-tools %}
-                {% block object-tools-items %}
-                    {% change_list_object_tools %}
-                {% endblock %}
+{% block page_actions %}
+    <div class="col-12 col-md-auto d-flex align-items-center justify-content-end page-actions">
+        {% block object-tools %}
+            {% block object-tools-items %}
+                {% change_list_object_tools %}
             {% endblock %}
-        </div>
-    {% endblock %}
-
+        {% endblock %}
+    </div>
+{% endblock %}
 
 {% block content %}
 
@@ -75,6 +74,24 @@
                                 <div>{{ cl.formset.management_form }}</div>
                             {% endif %}
 
+                            <!-- Total do valor Planejado -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table class="table" id="total-table">
+                                        <tbody>
+                                            <tr class="total-row">
+                                                <td class="total-cell text-right">
+                                                    <strong>Total do valor Planejado:</strong>
+                                                </td>
+                                                <td class="total-cell text-right" width="150px">
+                                                    <strong class="text-danger" style="font-size: 1.5em;">R$ {{ total_valor_planejado|floatformat:2|intcomma|replace_commas }}</strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             {% block result_list %}
                                 <div class="change-list-actions row pb-3">
                                     <div class="col-12">
@@ -85,24 +102,7 @@
                                 </div>
                                 {% result_list cl %}
                                 {% block after_results %}
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <table class="table" id="total-table">
-                                            <tbody>
-                                                <tr class="total-row">
-                                                    <td class="total-cell text-right">
-                                                        <strong>Valor Total das Camisas :</strong>
-                                                    </td>
-                                                    <td class="total-cell text-right" width="150px">
-                                                        <strong>R$ {{ total_valores }}</strong>
-                                                    </td>
-
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-{% endblock %}
+                                {% endblock %}
                                 {% if action_form and actions_on_bottom and cl.show_admin_actions %}
                                     <div class="row">
                                         <div class="col-12">

@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'apps.user',
     #'apps.zouk_me',
 
@@ -44,6 +45,38 @@ JAZZMIN_SETTINGS = {
     "site_logo_classes": "img",
     "site_icon": 'admin/imgs/favicon.ico',
     "show_ui_builder": True,
+    "menu_title": "Menu Principal",
+    "search_model": ["user.inscricao", "user.lote"],
+    "hide_apps": [],
+    "menu": [
+        {
+            "name": "Modelos Principais",
+            "items": [
+                {"name": "Inscrições", "model": "user.inscricao"},
+                {"name": "Eventos", "model": "user.evento"},
+                {"name": "Profissionais", "model": "user.profissional"},
+                {"name": "Planejamento", "model": "user.planejamento"},
+                {"name": "Lotes", "model": "user.lote"},
+                {"name": "Categorias", "model": "user.categoria"}
+            ]
+        },
+        {
+            "name": "Modelos Secundários",
+            "items": [
+                {"name": "Tipo de Evento", "model": "user.tipoevento"},
+                {"name": "Camisas", "model": "user.camisas"},
+                {"name": "Entradas", "model": "user.entradas"},
+                {"name": "Saídas", "model": "user.saidas"}
+            ]
+        },
+        {
+            "name": "Grupos e Usuários",
+            "items": [
+                {"name": "Grupos", "model": "auth.group"},
+                {"name": "Usuários", "model": "auth.user"}
+            ]
+        }
+    ],
     'icons': {
             'user.Congressista': 'fas fa-users',
             'user.Categoria': 'fas fa-address-book',
@@ -53,34 +86,36 @@ JAZZMIN_SETTINGS = {
             'user.Entrada': 'fas fa-book-open',
             'user.Saida': 'fas fa-book',
             'user.CadastroGerais': 'fas fa-book'
-
     },
-"order_with_respect_to": ["usuario","congressista","categoria","lote"]
+    "order_with_respect_to": [
+        "profissionais", "inscricao", "evento", "planejamento",
+        "lote", "categoria", "camisa", "tipo_evento"
+    ]
 }
 
 
-JAZZMIN_UI_TWEAKS = {
+JJAZZMIN_UI_TWEAKS = {
     "navbar_small_text": False,
     "footer_small_text": False,
     "body_small_text": False,
     "brand_small_text": False,
     "brand_colour": False,
     "accent": "accent-primary",
-    "navbar": "navbar-lightblue navbar-dark",
+    "navbar": "navbar-dark navbar-gray-dark",
     "no_navbar_border": False,
     "navbar_fixed": False,
     "layout_boxed": False,
     "footer_fixed": False,
     "sidebar_fixed": False,
-    "sidebar": "sidebar-light-lightblue",
+    "sidebar": "sidebar-dark-gray",
     "sidebar_nav_small_text": False,
     "sidebar_disable_expand": False,
     "sidebar_nav_child_indent": False,
     "sidebar_nav_compact_style": False,
     "sidebar_nav_legacy_style": False,
     "sidebar_nav_flat_style": True,
-    "theme": "flatly",
-    "dark_mode_theme": None,
+    "theme": "darkly",
+    "dark_mode_theme": "darkly",
     "button_classes": {
         "primary": "btn-outline-primary",
         "secondary": "btn-outline-secondary",
@@ -90,6 +125,7 @@ JAZZMIN_UI_TWEAKS = {
         "success": "btn-success"
     }
 }
+
 
 
 MIDDLEWARE = [
@@ -107,7 +143,10 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS':  [BASE_DIR / "templates"],
+        'DIRS': [
+            BASE_DIR / "templates",
+            BASE_DIR / "apps/user/templates",  # Adicione este caminho
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

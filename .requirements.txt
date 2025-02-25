@@ -10,3 +10,4 @@ psycopg==3.1.9
 python-docx==0.8.11
 sqlparse==0.4.4
 typing_extensions==4.6.3
+django-formtools>=2.5.1

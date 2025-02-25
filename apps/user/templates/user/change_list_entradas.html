@@ -1,0 +1,80 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list jazzmin humanize custom_filters %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'vendor/select2/css/select2.min.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media.js }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item active">{{ cl.opts.verbose_name_plural|capfirst }}</li>
+    </ol>
+{% endblock %}
+
+{% block content_title %} {{ cl.opts.verbose_name_plural|capfirst }} {% endblock %}
+
+{% block page_actions %}
+    <div class="col-12 col-md-auto d-flex align-items-center justify-content-end page-actions">
+        {% block object-tools %}
+            <div class="object-tools">
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <a href="{% url 'admin:user_entradas_add' %}" class="btn btn-success">  <!-- Alterado para btn-success -->
+                            Adicionar Entrada
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        {% endblock %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="col-12">
+        <div>
+            <form id="changelist-form" method="post" novalidate>{% csrf_token %}
+                <div id="content-main">
+                    <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
+                        <div class="row">
+                            <div class="col-12">
+                                {% block result_list %}
+                                    <div class="change-list-actions row pb-3">
+                                        <div class="col-12">
+                                            {% if action_form and actions_on_top and cl.show_admin_actions %}
+                                                {% admin_actions %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% result_list cl %}
+                                    {% block after_results %}
+                                    {% endblock %}
+                                    {% if action_form and actions_on_bottom and cl.show_admin_actions %}
+                                        <div class="row">
+                                            <div class="col-12">
+                                                {% admin_actions %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrajs %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
+{% endblock %}
