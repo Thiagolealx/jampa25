@@ -119,16 +119,22 @@ class InscricaoEventoInline(admin.TabularInline):
 @admin.register(Inscricao)
 class InscricaoAdmin(admin.ModelAdmin):
     form = InscricaoFormAdmin
-    list_display = ['nome', 'categoria', 'lote','eventos_cadastrados']
+    list_display = ['nome', 'categoria', 'lote', 'eventos_cadastrados', 'calcular_valor_total', 'parcelas','calcular_parcela']
     search_fields = ['nome', 'cpf']
     list_filter = ['categoria', 'lote']
     fieldsets = (
         ('Cadastro', {
-            'fields': ('nome', 'cpf', 'categoria', 'cep', 'cidade', 'uf','lote')
+            'fields': ('nome', 'cpf', 'categoria', 'cep', 'cidade', 'uf')
         }),
-      
     )
     inlines = [InscricaoEventoInline]
+    fieldsets += (
+        ('Pagamentos', {
+            'fields': ('lote','desconto', 'parcelas', 'valor_total' )
+        }),
+    )
+    readonly_fields = ['valor_total']
+    
     change_form_template = "user/change_form_inscricao.html"
     
     

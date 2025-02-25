@@ -38,6 +38,7 @@ class Evento(models.Model):
     valor_arrecadado = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     quantidade_pessoas = models.IntegerField(null=True,blank=True)
     contador_barco = models.IntegerField(default=0,editable=False,verbose_name="Vagas preenchidas ")
+    valor_unitario = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text='Valor unitário do evento')
 
     @property
     def valor_do_evento(self):
@@ -145,13 +146,27 @@ class Inscricao(models.Model):
 
     # Step 2
     lote = models.ForeignKey(Lote, on_delete=models.CASCADE)
-    
+    desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Desconto a ser aplicado no valor do lote')
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text='Valor total após aplicar desconto e incluir eventos')
+    parcelas = models.IntegerField(default=1, choices=[(i, str(i)) for i in range(1, 11)], help_text='Número de parcelas para pagamento')
 
     def save(self, *args, **kwargs):
         if not self.ano:
             self.ano = datetime.now().year
-        super().save(*args, **kwargs)
+        super().save(*args, **kwargs)  # Salvar a instância primeiro
     
+    def calcular_valor_total(self):
+        lote_valor = self.lote.valor_unitario if self.lote else 0
+        valor_lote_com_desconto = lote_valor - self.desconto
+        eventos_valor = sum(evento.evento.valor_unitario for evento in self.inscricaoevento_set.all())
+        return valor_lote_com_desconto + eventos_valor
+    
+    def calcular_parcela(self):
+        if self.parcelas > 0:
+            return self.calcular_valor_total() / self.parcelas
+        return 0
+        
+        
     def eventos_cadastrados(self):
         return ", ".join([str(evento.evento.descricao) for evento in self.inscricaoevento_set.all()])
 

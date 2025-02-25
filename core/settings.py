@@ -45,6 +45,38 @@ JAZZMIN_SETTINGS = {
     "site_logo_classes": "img",
     "site_icon": 'admin/imgs/favicon.ico',
     "show_ui_builder": True,
+    "menu_title": "Menu Principal",
+    "search_model": ["user.inscricao", "user.lote"],
+    "hide_apps": [],
+    "menu": [
+        {
+            "name": "Modelos Principais",
+            "items": [
+                {"name": "Inscrições", "model": "user.inscricao"},
+                {"name": "Eventos", "model": "user.evento"},
+                {"name": "Profissionais", "model": "user.profissional"},
+                {"name": "Planejamento", "model": "user.planejamento"},
+                {"name": "Lotes", "model": "user.lote"},
+                {"name": "Categorias", "model": "user.categoria"}
+            ]
+        },
+        {
+            "name": "Modelos Secundários",
+            "items": [
+                {"name": "Tipo de Evento", "model": "user.tipoevento"},
+                {"name": "Camisas", "model": "user.camisas"},
+                {"name": "Entradas", "model": "user.entradas"},
+                {"name": "Saídas", "model": "user.saidas"}
+            ]
+        },
+        {
+            "name": "Grupos e Usuários",
+            "items": [
+                {"name": "Grupos", "model": "auth.group"},
+                {"name": "Usuários", "model": "auth.user"}
+            ]
+        }
+    ],
     'icons': {
             'user.Congressista': 'fas fa-users',
             'user.Categoria': 'fas fa-address-book',
@@ -54,7 +86,6 @@ JAZZMIN_SETTINGS = {
             'user.Entrada': 'fas fa-book-open',
             'user.Saida': 'fas fa-book',
             'user.CadastroGerais': 'fas fa-book'
-
     },
     "order_with_respect_to": [
         "profissionais", "inscricao", "evento", "planejamento",
