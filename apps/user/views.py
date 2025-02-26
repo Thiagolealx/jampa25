@@ -2,10 +2,12 @@ from django.db.models import Sum
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from formtools.wizard.views import SessionWizardView # type: ignore
+from formtools.wizard.views import SessionWizardView 
 from .forms import InscricaoStep1Form, InscricaoStep2Form
 from apps.user import forms
-from .models import Inscricao
+from .models import Inscricao, Evento
+from django.http import JsonResponse
+
 
 @require_http_methods(['GET'])
 def buscar_dados_cpf(request, cpf):
@@ -81,3 +83,10 @@ class InscricaoWizard(SessionWizardView):
         return render(self.request, 'user/inscricao_done.html', {
             'form_data': form_data,
         })
+
+
+
+def vagas_restantes_view(request, evento_id):
+    evento = Evento.objects.get(id=evento_id)
+    vagas_restantes = evento.quantidade_pessoas - evento.contador_inscricoes
+    return JsonResponse({'vagas_restantes': vagas_restantes})

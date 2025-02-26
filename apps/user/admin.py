@@ -4,6 +4,7 @@ from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profis
 from .forms import ProfissionalForm
 from django.db.models import Sum
 from .forms import InscricaoFormAdmin
+from django.utils.safestring import mark_safe
 
 
 class LoteAdmin(admin.ModelAdmin):
@@ -113,9 +114,19 @@ class ProfissionalAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Profissional, ProfissionalAdmin)
+
 class InscricaoEventoInline(admin.TabularInline):
     model = InscricaoEvento
     extra = 1
+    fields = ('evento', 'confirmar', 'vagas_restantes')
+    readonly_fields = ('vagas_restantes',)
+
+    def vagas_restantes(self, obj):
+        return obj.vagas_restantes() if obj.evento else "Selecionar evento"
+
+    class Media:
+        js = ('js/inscricao_evento.js',)  
+
 
 @admin.register(Inscricao)
 class InscricaoAdmin(admin.ModelAdmin):
