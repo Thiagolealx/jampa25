@@ -51,8 +51,9 @@ class EventoAdmin(admin.ModelAdmin):
         "valor_arrecadado",
         "valor_do_evento",
         "quantidade_pessoas",
-        "contador_barco"
-    ]
+        "contador_inscricoes",
+         ]
+
     ordering = ['-id']
     search_fields = ['descricao', 'tipo', 'data',]
 

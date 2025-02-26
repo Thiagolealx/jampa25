@@ -37,8 +37,9 @@ class Evento(models.Model):
     valor_planejado = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     valor_arrecadado = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     quantidade_pessoas = models.IntegerField(null=True,blank=True)
-    contador_barco = models.IntegerField(default=0,editable=False,verbose_name="Vagas preenchidas ")
+    # contador_barco = models.IntegerField(default=0,editable=False,verbose_name="Vagas preenchidas ")
     valor_unitario = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text='Valor unitário do evento')
+    contador_inscricoes = models.IntegerField(default=0, editable=False, verbose_name="Inscrições")
 
     @property
     def valor_do_evento(self):
@@ -91,40 +92,40 @@ class Profissional(models.Model):
     jack_jill = models.BooleanField(default=False, verbose_name='Jack & Jill', null=True, blank=True)
     barco = models.BooleanField(default=False, verbose_name='Barco', null=True, blank=True)
 
-    def clean(self):
-        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
-        if not evento:
-            raise ValidationError("Evento não encontrado.")
+    # def clean(self):
+    #     evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
+    #     if not evento:
+    #         raise ValidationError("Evento não encontrado.")
         
-        if self.barco:
-            if evento.contador_barco >= evento.quantidade_pessoas:
-                raise ValidationError("Não há vagas disponíveis no barco.")
+    #     if self.barco:
+    #         if evento.contador_barco >= evento.quantidade_pessoas:
+    #             raise ValidationError("Não há vagas disponíveis no barco.")
 
-    def save(self, *args, **kwargs):
-        self.clean()  # Chama o método clean para validação
-        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
+    # def save(self, *args, **kwargs):
+    #     self.clean()  # Chama o método clean para validação
+    #     evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
         
-        # Verificar se a instância já existe no banco de dados
-        if self.pk:
-            old_instance = Profissional.objects.get(pk=self.pk)
-            if old_instance.barco and not self.barco:
-                # Se o campo barco foi desmarcado, decrementar o contador
-                evento.contador_barco -= 1
-                evento.save()
+    #     # Verificar se a instância já existe no banco de dados
+    #     if self.pk:
+    #         old_instance = Profissional.objects.get(pk=self.pk)
+    #         if old_instance.barco and not self.barco:
+    #             # Se o campo barco foi desmarcado, decrementar o contador
+    #             evento.contador_barco -= 1
+    #             evento.save()
         
-        if self.barco and (not self.pk or (self.pk and not old_instance.barco)):
-            evento.contador_barco += 1
-            evento.save()
+    #     if self.barco and (not self.pk or (self.pk and not old_instance.barco)):
+    #         evento.contador_barco += 1
+    #         evento.save()
         
-        super().save(*args, **kwargs)
+    #     super().save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
-        evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
-        if self.barco and evento:
-            if evento.contador_barco > 0:
-                evento.contador_barco -= 1
-                evento.save()
-        super().delete(*args, **kwargs)
+    # def delete(self, *args, **kwargs):
+    #     evento = Evento.objects.first()  # Ajuste conforme necessário para obter o evento correto
+    #     if self.barco and evento:
+    #         if evento.contador_barco > 0:
+    #             evento.contador_barco -= 1
+    #             evento.save()
+    #     super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"{self.nome} - {self.funcao}"
@@ -182,8 +183,33 @@ class InscricaoEvento(models.Model):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     confirmar = models.BooleanField(default=False, verbose_name="Confirmar Evento")
 
+    def save(self, *args, **kwargs):
+        # Se a instância já existe, significa que estamos atualizando
+        if self.pk:
+            old_instance = InscricaoEvento.objects.get(pk=self.pk)
+            # Se o evento foi alterado
+            if old_instance.evento != self.evento:
+                # Decrementa o contador do evento antigo
+                old_instance.evento.contador_inscricoes -= 1
+                old_instance.evento.save()
+
+        # Incrementa o contador do novo evento
+        self.evento.contador_inscricoes += 1
+        self.evento.save()
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Decrementa o contador do evento ao deletar
+        self.evento.contador_inscricoes -= 1
+        self.evento.save()
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f"{self.inscricao.nome} - {self.evento.descricao} - {'Sim' if self.confirmar else 'Não'}"
+
+    class Meta:
+        ordering = ['-id']
 
 
 class Entradas(models.Model):
