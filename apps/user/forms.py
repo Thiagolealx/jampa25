@@ -2,7 +2,7 @@ from django import forms
 from django.core.validators import RegexValidator
 from django.forms import TextInput
 from django.forms import inlineformset_factory
-from .models import Profissional, Evento, Inscricao, InscricaoEvento
+from .models import Profissional, Evento, Inscricao, InscricaoEvento,Pagamento
 
 
 class InscricaoFormAdmin(forms.ModelForm):
@@ -53,16 +53,6 @@ class ProfissionalForm(forms.ModelForm):
         else:
             self.fields['barco'].help_text = '<span style="font-size: 1.5em;">Evento não encontrado.</span>'
     
-    # def clean(self):
-    #     evento = Evento.objects.first()
-    #     if not evento:
-    #         raise forms.ValidationError("Evento não encontrado.")
-    
-    #     if self.cleaned_data.get('barco'):
-    #         if evento.contador_barco >= evento.quantidade_pessoas:
-    #             raise forms.ValidationError("Não há vagas disponíveis no barco.")
-    #     return self.cleaned_data
-
 
 
 class InscricaoStep1Form(forms.ModelForm):
@@ -76,3 +66,22 @@ class InscricaoStep2Form(forms.ModelForm):
         fields = ['lote']
 
 InscricaoEventoFormSet = inlineformset_factory(Inscricao, InscricaoEvento, fields=('evento', 'confirmar'), extra=1)
+
+
+class PagamentoForm(forms.ModelForm):
+    class Meta:
+        model = Pagamento
+        fields = ['inscricao', 'valor_pago', 'parcela']
+
+    def __init__(self, *args, **kwargs):
+        super(PagamentoForm, self).__init__(*args, **kwargs)
+        if 'inscricao' in self.data:
+            try:
+                inscricao_id = int(self.data.get('inscricao'))
+                inscricao = Inscricao.objects.get(id=inscricao_id)
+                self.fields['parcela'].queryset = range(1, inscricao.parcelas + 1)  # Gera lista de parcelas
+                self.initial['valor_pago'] = inscricao.calcular_parcela()  # Define o valor da parcela
+            except (ValueError, TypeError, Inscricao.DoesNotExist):
+                pass  # Caso a inscrição não seja válida
+        else:
+            self.fields['parcela'].queryset = Inscricao.objects.none()

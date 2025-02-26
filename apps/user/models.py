@@ -150,7 +150,7 @@ class InscricaoEvento(models.Model):
     def vagas_restantes(self):
         # Calcula o número de vagas restantes
         return self.evento.quantidade_pessoas - self.evento.contador_inscricoes
-        
+
     def save(self, *args, **kwargs):
         # Se a instância já existe, significa que estamos atualizando
         if self.pk:
@@ -217,3 +217,12 @@ class Saidas(models.Model):
 
     def __str__(self):
         return self.descricao
+
+class Pagamento(models.Model):
+    inscricao = models.ForeignKey(Inscricao, on_delete=models.CASCADE)
+    valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
+    parcela = models.IntegerField()
+    data_pagamento = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Pagamento de {self.valor_pago} para {self.inscricao.nome} - Parcela {self.parcela}"

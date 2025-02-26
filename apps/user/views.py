@@ -5,8 +5,10 @@ from django.views.decorators.http import require_http_methods
 from formtools.wizard.views import SessionWizardView 
 from .forms import InscricaoStep1Form, InscricaoStep2Form
 from apps.user import forms
-from .models import Inscricao, Evento
+from .models import Inscricao, Evento, Pagamento
 from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+
 
 
 @require_http_methods(['GET'])
@@ -90,3 +92,27 @@ def vagas_restantes_view(request, evento_id):
     evento = Evento.objects.get(id=evento_id)
     vagas_restantes = evento.quantidade_pessoas - evento.contador_inscricoes
     return JsonResponse({'vagas_restantes': vagas_restantes})
+
+def pagamento_view(request, inscricao_id):
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+    valor_total = inscricao.calcular_valor_total()  # Valor total da inscrição
+    parcelas = inscricao.parcelas  # Número total de parcelas
+    valor_parcela = inscricao.calcular_parcela()  # Valor de cada parcela
+
+    # Obter todos os pagamentos relacionados à inscrição
+    pagamentos = Pagamento.objects.filter(inscricao=inscricao)
+
+    if request.method == 'POST':
+        valor_pago = request.POST.get('valor_pago')
+        parcela = request.POST.get('parcela')
+        pagamento = Pagamento(inscricao=inscricao, valor_pago=valor_pago, parcela=parcela)
+        pagamento.save()
+        return render(request, 'user/pagamento_success.html', {'pagamento': pagamento})
+
+    return render(request, 'user/pagamento_form.html', {
+        'inscricao': inscricao,
+        'valor_total': valor_total,
+        'valor_parcela': valor_parcela,
+        'parcelas': range(1, parcelas + 1),  # Gera uma lista de parcelas
+        'pagamentos': pagamentos,  # Passa a lista de pagamentos para o template
+    })

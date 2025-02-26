@@ -1,0 +1,43 @@
+<form method="post">
+    {% csrf_token %}
+    <h2>Pagamento para {{ inscricao.nome }}</h2>
+    <p>Valor Total da Inscrição: {{ valor_total }}</p>
+    <p>Número Total de Parcelas: {{ parcelas|length }}</p>
+    <p>Valor de Cada Parcela: {{ valor_parcela }}</p>
+    
+    <label for="parcela">Escolha a Parcela:</label>
+    <select name="parcela" id="parcela">
+        {% for i in range(1, parcelas + 1) %}
+            <option value="{{ i }}">{{ i }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="valor_pago">Valor do Pagamento:</label>
+    <input type="number" name="valor_pago" id="valor_pago" step="0.01" required>
+
+    <button type="submit">Pagar</button>
+</form>
+
+<h3>Histórico de Pagamentos</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Data do Pagamento</th>
+            <th>Valor Pago</th>
+            <th>Parcela</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pagamento in pagamentos %}s
+            <tr>
+                <td>{{ pagamento.data_pagamento }}</td>
+                <td>{{ pagamento.valor_pago }}</td>
+                <td>{{ pagamento.parcela }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">Nenhum pagamento registrado.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

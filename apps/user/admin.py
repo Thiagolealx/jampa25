@@ -1,10 +1,13 @@
 from os import path
 from django.contrib import admin
-from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento
+from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento,Pagamento
 from .forms import ProfissionalForm
 from django.db.models import Sum
 from .forms import InscricaoFormAdmin
 from django.utils.safestring import mark_safe
+from django.forms import inlineformset_factory
+from django.forms import ModelForm
+from .forms import PagamentoForm
 
 
 class LoteAdmin(admin.ModelAdmin):
@@ -168,3 +171,22 @@ class SaidasAdmin(admin.ModelAdmin):
 # Registrando os modelos no Admin
 admin.site.register(Entradas, EntradasAdmin)
 admin.site.register(Saidas, SaidasAdmin)
+
+
+class PagamentoAdmin(admin.ModelAdmin):
+    # form = PagamentoForm
+    list_display = ['inscricao', 'valor_pago', 'parcela', 'data_pagamento']
+    search_fields = ['inscricao__nome']
+    list_filter = ['data_pagamento']
+    # change_list_template = "user/change_form_pagamentos.html"
+    
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if obj:
+            # Se já houver um pagamento, você pode adicionar lógica aqui para buscar e exibir os pagamentos anteriores
+            previous_payments = Pagamento.objects.filter(inscricao=obj.inscricao)
+            form.previous_payments = previous_payments
+        return form
+
+admin.site.register(Pagamento, PagamentoAdmin)
