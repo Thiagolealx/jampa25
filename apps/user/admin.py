@@ -174,17 +174,15 @@ admin.site.register(Saidas, SaidasAdmin)
 
 
 class PagamentoAdmin(admin.ModelAdmin):
-    # form = PagamentoForm
+    form = PagamentoForm
     list_display = ['inscricao', 'valor_pago', 'parcela', 'data_pagamento']
     search_fields = ['inscricao__nome']
     list_filter = ['data_pagamento']
-    # change_list_template = "user/change_form_pagamentos.html"
-    
+  
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         if obj:
-            # Se já houver um pagamento, você pode adicionar lógica aqui para buscar e exibir os pagamentos anteriores
             previous_payments = Pagamento.objects.filter(inscricao=obj.inscricao)
             form.previous_payments = previous_payments
         return form
