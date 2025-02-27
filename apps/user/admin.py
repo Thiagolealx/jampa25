@@ -1,6 +1,7 @@
 from os import path
 from django.contrib import admin
 from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento,Pagamento
+from .models import Entradas, Saidas
 from .forms import ProfissionalForm
 from django.db.models import Sum
 from .forms import InscricaoFormAdmin
@@ -132,9 +133,11 @@ class InscricaoEventoInline(admin.TabularInline):
 
 
 @admin.register(Inscricao)
+
 class InscricaoAdmin(admin.ModelAdmin):
     form = InscricaoFormAdmin
-    list_display = ['nome', 'categoria', 'lote', 'eventos_cadastrados', 'calcular_valor_total', 'parcelas','calcular_parcela']
+    list_display = ['nome', 'categoria', 'lote', 'eventos_cadastrados', 'calcular_valor_total_display', 'parcelas', 'parcela_display',
+                    'valor_pago_total', 'valor_a_pagar', 'data_proximo_pagamento']
     search_fields = ['nome', 'cpf']
     list_filter = ['categoria', 'lote']
     fieldsets = (
@@ -145,16 +148,34 @@ class InscricaoAdmin(admin.ModelAdmin):
     inlines = [InscricaoEventoInline]
     fieldsets += (
         ('Pagamentos', {
-            'fields': ('lote','desconto', 'parcelas', 'valor_total' )
+            'fields': ('lote', 'desconto', 'parcelas', 'valor_total')
         }),
     )
     readonly_fields = ['valor_total']
     
     change_form_template = "user/change_form_inscricao.html"
     
+
+    def calcular_valor_total_display(self, obj):
+        return obj.calcular_valor_total()  
+
+    calcular_valor_total_display.short_description = 'Total' 
+
+    def parcela_display(self, obj):
+        return f"{obj.calcular_parcela():.2f}" 
+
+    parcela_display.short_description = 'Valor da Parcela'  
+
+    def valor_pago_total(self, obj):
+        return obj.valor_pago_total()  
+
+    def valor_a_pagar(self, obj):
+        return obj.valor_a_pagar()
+
+    def data_proximo_pagamento(self, obj):
+        pagamentos = obj.pagamento_set.order_by('-data_pagamento')
+        return pagamentos.first().data_proximo_pagamento if pagamentos.exists() else None
     
-from django.contrib import admin
-from .models import Entradas, Saidas
 
 class EntradasAdmin(admin.ModelAdmin):
     list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total', 'data']

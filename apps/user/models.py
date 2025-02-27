@@ -1,6 +1,8 @@
 from datetime import datetime
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.db.models import Sum
+from datetime import timedelta
 
 class Lote(models.Model):
     descricao = models.CharField(max_length=255)
@@ -118,7 +120,7 @@ class Inscricao(models.Model):
     def save(self, *args, **kwargs):
         if not self.ano:
             self.ano = datetime.now().year
-        super().save(*args, **kwargs)  # Salvar a instância primeiro
+        super().save(*args, **kwargs)  
     
     def calcular_valor_total(self):
         lote_valor = self.lote.valor_unitario if self.lote else 0
@@ -134,6 +136,13 @@ class Inscricao(models.Model):
         
     def eventos_cadastrados(self):
         return ", ".join([str(evento.evento.descricao) for evento in self.inscricaoevento_set.all()])
+
+
+    def valor_pago_total(self):
+        return self.pagamento_set.aggregate(Sum('valor_pago'))['valor_pago__sum'] or 0
+
+    def valor_a_pagar(self):
+        return self.calcular_valor_total() - self.valor_pago_total()
 
 
     def __str__(self):
@@ -223,6 +232,13 @@ class Pagamento(models.Model):
     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
     parcela = models.IntegerField()
     data_pagamento = models.DateField(auto_now_add=True)
+    data_proximo_pagamento = models.DateField(null=True, blank=True) 
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Atualiza a data do próximo pagamento
+        self.data_proximo_pagamento = self.data_pagamento + timedelta(days=30)
+        super().save(update_fields=['data_proximo_pagamento'])   
 
     def __str__(self):
         return f"Pagamento de {self.valor_pago} para {self.inscricao.nome} - Parcela {self.parcela}"
