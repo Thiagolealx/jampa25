@@ -5,9 +5,10 @@ from django.views.decorators.http import require_http_methods
 from formtools.wizard.views import SessionWizardView 
 from .forms import InscricaoStep1Form, InscricaoStep2Form
 from apps.user import forms
-from .models import Inscricao, Evento, Pagamento
+from .models import Inscricao, Evento, Pagamento, Planejamento
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.views.decorators.http import require_http_methods
 
 
 
@@ -30,22 +31,6 @@ def buscar_dados_cpf(request, cpf):
             'success': False,
             'error': f'Erro ao buscar dados: {str(e)}'
         })
-
-# def caixa_view(request):
-#     total_parcelas = Congressista.objects.aggregate(total_parcelas=Sum('get_total_parcelas'))['total_parcelas'] or 0
-#     total_entrada = Entrada.objects.aggregate(total_entrada=Sum('get_valor_total'))['total_entrada'] or 0
-#     total_saida = Saida.objects.aggregate(total_saida=Sum('get_valor_total'))['total_saida'] or 0
-
-#     valor_total_caixa = total_parcelas + total_entrada - total_saida
-
-#     context = {
-#         'total_parcelas': total_parcelas,
-#         'total_entrada': total_entrada,
-#         'total_saida': total_saida,
-#         'valor_total_caixa': valor_total_caixa,
-#     }
-
-#     return render(request, 'caixa.html', context)
 
 
 FORMS = [("step1", InscricaoStep1Form),
@@ -113,6 +98,28 @@ def pagamento_view(request, inscricao_id):
         'inscricao': inscricao,
         'valor_total': valor_total,
         'valor_parcela': valor_parcela,
-        'parcelas': range(1, parcelas + 1),  # Gera uma lista de parcelas
-        'pagamentos': pagamentos,  # Passa a lista de pagamentos para o template
+        'parcelas': range(1, parcelas + 1),  
+        'pagamentos': pagamentos,  
     })
+
+
+    
+def caixa_view(request):
+    total_inscricoes = Inscricao.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+    total_camisas = Camisas.objects.aggregate(Sum('valor_unitario'))['valor_unitario__sum'] or 0
+    total_entradas = Entradas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+    total_saidas = Saidas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+    total_planejamento = Planejamento.objects.aggregate(Sum('valor_planejado'))['valor_planejado__sum'] or 0
+
+    total_caixa = (total_inscricoes + total_camisas + total_entradas + total_planejamento) - total_saidas
+
+    context = {
+        'total_inscricoes': total_inscricoes,
+        'total_camisas': total_camisas,
+        'total_entradas': total_entradas,
+        'total_saidas': total_saidas,
+        'total_planejamento': total_planejamento,
+        'total_caixa': total_caixa,
+    }
+    
+    return render(request, 'user/caixa.html', context)

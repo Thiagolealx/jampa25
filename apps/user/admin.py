@@ -1,6 +1,6 @@
 from os import path
 from django.contrib import admin
-from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento,Pagamento
+from .models import Lote,Categoria,TipoEvento,Evento,Camisas,Planejamento,Profissional,Inscricao,InscricaoEvento,Pagamento,Caixa
 from .models import Entradas, Saidas
 from .forms import ProfissionalForm
 from django.db.models import Sum
@@ -136,6 +136,7 @@ class InscricaoEventoInline(admin.TabularInline):
 
 class InscricaoAdmin(admin.ModelAdmin):
     form = InscricaoFormAdmin
+    change_list_template = "user/change_list_congressitas.html"
     list_display = ['nome', 'categoria', 'lote', 'eventos_cadastrados', 'calcular_valor_total_display', 'parcelas', 'parcela_display',
                     'valor_pago_total', 'valor_a_pagar', 'data_proximo_pagamento']
     search_fields = ['nome', 'cpf']
@@ -175,7 +176,14 @@ class InscricaoAdmin(admin.ModelAdmin):
     def data_proximo_pagamento(self, obj):
         pagamentos = obj.pagamento_set.order_by('-data_pagamento')
         return pagamentos.first().data_proximo_pagamento if pagamentos.exists() else None
+
+def changelist_view(self, request, extra_context=None):
+    extra_context = extra_context or {}
+    total_valor_inscricoes = Inscricao.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+    print("Total Valor Inscrições:", total_valor_inscricoes)  
+    extra_context['total_valor_inscricoes'] = total_valor_inscricoes
     
+    return super(InscricaoAdmin, self).changelist_view(request, extra_context=extra_context)
 
 class EntradasAdmin(admin.ModelAdmin):
     list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total', 'data']
@@ -209,3 +217,28 @@ class PagamentoAdmin(admin.ModelAdmin):
         return form
 
 admin.site.register(Pagamento, PagamentoAdmin)
+
+class CaixaAdmin(admin.ModelAdmin):
+    change_list_template = "user/change_list_caixa.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        total_inscricoes = Inscricao.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+        total_camisas = Camisas.objects.aggregate(Sum('valor_unitario'))['valor_unitario__sum'] or 0
+        total_entradas = Entradas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+        total_saidas = Saidas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+        total_planejamento = Planejamento.objects.aggregate(Sum('valor_planejado'))['valor_planejado__sum'] or 0
+
+        total_caixa = (total_inscricoes + total_camisas + total_entradas + total_planejamento) - total_saidas
+
+        extra_context['total_inscricoes'] = total_inscricoes
+        extra_context['total_camisas'] = total_camisas
+        extra_context['total_entradas'] = total_entradas
+        extra_context['total_saidas'] = total_saidas
+        extra_context['total_planejamento'] = total_planejamento
+        extra_context['total_caixa'] = total_caixa
+
+        return super().changelist_view(request, extra_context=extra_context)
+
+admin.site.register(Caixa, CaixaAdmin)
+

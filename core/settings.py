@@ -145,7 +145,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / "templates",
-            BASE_DIR / "apps/user/templates",  # Adicione este caminho
+            BASE_DIR / "apps/user/templates",  
         ],
         'APP_DIRS': True,
         'OPTIONS': {

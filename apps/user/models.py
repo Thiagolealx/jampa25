@@ -3,6 +3,9 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from datetime import timedelta
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+
 
 class Lote(models.Model):
     descricao = models.CharField(max_length=255)
@@ -116,11 +119,12 @@ class Inscricao(models.Model):
     desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Desconto a ser aplicado no valor do lote')
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text='Valor total após aplicar desconto e incluir eventos')
     parcelas = models.IntegerField(default=1, choices=[(i, str(i)) for i in range(1, 11)], help_text='Número de parcelas para pagamento')
-
+    
     def save(self, *args, **kwargs):
         if not self.ano:
             self.ano = datetime.now().year
-        super().save(*args, **kwargs)  
+        
+        super().save(*args, **kwargs)
     
     def calcular_valor_total(self):
         lote_valor = self.lote.valor_unitario if self.lote else 0
@@ -143,6 +147,12 @@ class Inscricao(models.Model):
 
     def valor_a_pagar(self):
         return self.calcular_valor_total() - self.valor_pago_total()
+    
+@receiver(post_save, sender=Inscricao)
+def update_valor_total(sender, instance, created, **kwargs):
+    if created:
+        instance.valor_total = instance.calcular_valor_total()
+        instance.save(update_fields=['valor_total'])
 
 
     def __str__(self):
@@ -157,7 +167,7 @@ class InscricaoEvento(models.Model):
     confirmar = models.BooleanField(default=False, verbose_name="Confirmar Evento")
 
     def vagas_restantes(self):
-        # Calcula o número de vagas restantes
+        
         return self.evento.quantidade_pessoas - self.evento.contador_inscricoes
 
     def save(self, *args, **kwargs):
@@ -242,3 +252,41 @@ class Pagamento(models.Model):
 
     def __str__(self):
         return f"Pagamento de {self.valor_pago} para {self.inscricao.nome} - Parcela {self.parcela}"
+
+    class Meta:
+        verbose_name = "Pagamento"
+        verbose_name_plural = "Pagamentos"
+        ordering = ['-id']
+
+
+
+class Caixa(models.Model):
+  
+    
+    @property
+    def total_inscricoes(self):
+        return self.pagamento_set.aggregate(Sum('valor_pago'))['valor_pago__sum'] or 0
+    
+    @property
+    def total_camisas(self):
+        return self.pagamento_set.aggregate(Sum('valor_pago'))['valor_pago__sum'] or 0
+    
+    @property
+    def total_entradas(self):
+        return self.pagamento_set.aggregate(Sum('valor_pago'))['valor_pago__sum'] or 0
+    
+    @property
+    def total_planejamento(self):
+        return self.pagamento_set.aggregate(Sum('valor_pago'))['valor_pago__sum'] or 0
+
+    @property
+    def total_saidas(self):
+        return self.pagamento_set.aggregate(Sum('valor_pago'))['valor_pago__sum'] or 0
+
+    @property
+    def total_caixa(self):
+        return (self.total_inscricoes + self.total_camisas + self.total_entradas + self.total_planejamento) - self.total_saidas
+    
+    class Meta:
+        verbose_name = "Caixa"
+        verbose_name_plural = "Caixas"
