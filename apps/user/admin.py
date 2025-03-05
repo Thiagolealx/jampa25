@@ -10,6 +10,8 @@ from django.forms import inlineformset_factory
 from django.forms import ModelForm
 from .forms import PagamentoForm
 from django.db.models import F, Sum, ExpressionWrapper, DecimalField
+from django.contrib import admin
+from django.utils.html import format_html 
 
 
 class LoteAdmin(admin.ModelAdmin):
@@ -139,7 +141,7 @@ class InscricaoAdmin(admin.ModelAdmin):
     form = InscricaoFormAdmin
     change_list_template = "user/change_list_congressitas.html"
     list_display = ['nome', 'categoria', 'lote', 'eventos_cadastrados',  'parcelas', 'parcela_display',
-                    'valor_pago_total', 'valor_a_pagar', 'data_proximo_pagamento']
+                    'valor_pago_total', 'valor_a_pagar', 'data_proximo_pagamento', 'status_pagamento']
     search_fields = ['nome', 'cpf']
     list_filter = ['categoria', 'lote']
     fieldsets = (
@@ -202,6 +204,14 @@ class InscricaoAdmin(admin.ModelAdmin):
         extra_context['total_valor_inscritos'] = total_valor_inscritos
         extra_context['total_valor_a_pagar'] = total_valor_a_pagar
         return super(InscricaoAdmin, self).changelist_view(request, extra_context=extra_context)
+
+    def status_pagamento(self, obj):
+        if obj.valor_a_pagar() <= 0:
+            return format_html('<span style="color: green;">Pago</span>')
+        else:
+            return format_html('<span style="color: red;">Pendente</span>')
+
+    status_pagamento.short_description = 'Status de Pagamento'
 
     
         
