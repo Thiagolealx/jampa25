@@ -267,13 +267,14 @@ class CaixaAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        total_inscricoes = Inscricao.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+        total_inscricoes = Inscricao.objects.aggregate(Sum('pagamento__valor_pago'))['pagamento__valor_pago__sum'] or 0
         total_camisas = Camisas.objects.aggregate(Sum('valor_unitario'))['valor_unitario__sum'] or 0
         total_entradas = Entradas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
         total_saidas = Saidas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
         total_planejamento = Planejamento.objects.aggregate(Sum('valor_planejado'))['valor_planejado__sum'] or 0
 
-        total_caixa = (total_inscricoes + total_camisas + total_entradas + total_planejamento) - total_saidas
+        total_caixa = (total_inscricoes + total_camisas + total_entradas ) - total_saidas
+        saldo = total_caixa - total_saidas
 
         extra_context['total_inscricoes'] = total_inscricoes
         extra_context['total_camisas'] = total_camisas
@@ -281,6 +282,7 @@ class CaixaAdmin(admin.ModelAdmin):
         extra_context['total_saidas'] = total_saidas
         extra_context['total_planejamento'] = total_planejamento
         extra_context['total_caixa'] = total_caixa
+        extra_context['saldo'] = saldo
 
         return super().changelist_view(request, extra_context=extra_context)
 

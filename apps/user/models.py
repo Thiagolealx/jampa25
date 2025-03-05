@@ -265,7 +265,7 @@ class Caixa(models.Model):
     
     @property
     def total_inscricoes(self):
-        return self.pagamento_set.aggregate(Sum('valor_pago'))['valor_pago__sum'] or 0
+        return self.pagamento_set.aggregate(Sum('pagamento__valor_pago'))['pagamento__valor_pago__sum'] or 0
     
     @property
     def total_camisas(self):
@@ -285,8 +285,12 @@ class Caixa(models.Model):
 
     @property
     def total_caixa(self):
-        return (self.total_inscricoes + self.total_camisas + self.total_entradas + self.total_planejamento) - self.total_saidas
-    
+        return (self.total_inscricoes + self.total_camisas + self.total_entradas ) - self.total_saidas
+
+    @property
+    def saldo(self):
+        return (self.total_caixa) - self.total_saidas
+
     class Meta:
         verbose_name = "Caixa"
         verbose_name_plural = "Caixas"
