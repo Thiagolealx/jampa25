@@ -147,6 +147,12 @@ class Inscricao(models.Model):
 
     def valor_a_pagar(self):
         return self.calcular_valor_total() - self.valor_pago_total()
+
+    def __str__(self):
+        return f"{self.nome} - {self.cpf}"
+
+    class Meta:
+        ordering = ['-id']
     
 @receiver(post_save, sender=Inscricao)
 def update_valor_total(sender, instance, created, **kwargs):
@@ -154,12 +160,7 @@ def update_valor_total(sender, instance, created, **kwargs):
         instance.valor_total = instance.calcular_valor_total()
         instance.save(update_fields=['valor_total'])
 
-
-    def __str__(self):
-        return f"{self.nome} - {self.cpf}"
-
-    class Meta:
-        ordering = ['-id']
+   
 
 class InscricaoEvento(models.Model):
     inscricao = models.ForeignKey(Inscricao, on_delete=models.CASCADE)
