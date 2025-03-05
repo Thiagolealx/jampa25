@@ -138,7 +138,7 @@ class InscricaoEventoInline(admin.TabularInline):
 class InscricaoAdmin(admin.ModelAdmin):
     form = InscricaoFormAdmin
     change_list_template = "user/change_list_congressitas.html"
-    list_display = ['nome', 'categoria', 'lote', 'eventos_cadastrados', 'calcular_valor_total_display', 'parcelas', 'parcela_display',
+    list_display = ['nome', 'categoria', 'lote', 'eventos_cadastrados',  'parcelas', 'parcela_display',
                     'valor_pago_total', 'valor_a_pagar', 'data_proximo_pagamento']
     search_fields = ['nome', 'cpf']
     list_filter = ['categoria', 'lote']

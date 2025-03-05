@@ -129,7 +129,7 @@ class Inscricao(models.Model):
     def calcular_valor_total(self):
         lote_valor = self.lote.valor_unitario if self.lote else 0
         valor_lote_com_desconto = lote_valor - self.desconto
-        eventos_valor = sum(evento.evento.valor_unitario for evento in self.inscricaoevento_set.all())
+        eventos_valor = sum((evento.evento.valor_unitario or 0) for evento in self.inscricaoevento_set.all())
         return valor_lote_com_desconto + eventos_valor
     
     def calcular_parcela(self):
