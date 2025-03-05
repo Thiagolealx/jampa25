@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 from django.forms import inlineformset_factory
 from django.forms import ModelForm
 from .forms import PagamentoForm
+from django.db.models import F, Sum, ExpressionWrapper, DecimalField
 
 
 class LoteAdmin(admin.ModelAdmin):
@@ -177,25 +178,68 @@ class InscricaoAdmin(admin.ModelAdmin):
         pagamentos = obj.pagamento_set.order_by('-data_pagamento')
         return pagamentos.first().data_proximo_pagamento if pagamentos.exists() else None
 
-def changelist_view(self, request, extra_context=None):
-    extra_context = extra_context or {}
-    total_valor_inscricoes = Inscricao.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
-    print("Total Valor Inscrições:", total_valor_inscricoes)  
-    extra_context['total_valor_inscricoes'] = total_valor_inscricoes
+    # def changelist_view(self, request, extra_context=None):
+    #     extra_context = extra_context or {}
+    #     # Agregando a soma do valor_pago dos pagamentos associados
+    #     total_valor_inscritos = Inscricao.objects.aggregate(Sum('pagamento__valor_pago'))['pagamento__valor_pago__sum'] or 0
+    #     print("Total Valor Inscritos:", total_valor_inscritos)
+        
+    #     extra_context['total_valor_inscritos'] = total_valor_inscritos
+    #     return super(InscricaoAdmin, self).changelist_view(request, extra_context=extra_context)
+
+ 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        
+        total_valor_inscritos = Inscricao.objects.aggregate(Sum('pagamento__valor_pago'))['pagamento__valor_pago__sum'] or 0
+        print("Total Valor Inscritos:", total_valor_inscritos)
     
-    return super(InscricaoAdmin, self).changelist_view(request, extra_context=extra_context)
+        # Calcular o total de valor a pagar
+        total_valor_a_pagar = sum(inscricao.valor_a_pagar() for inscricao in Inscricao.objects.all())
+        
+        print("Total Valor a Pagar:", total_valor_a_pagar)
+    
+        extra_context['total_valor_inscritos'] = total_valor_inscritos
+        extra_context['total_valor_a_pagar'] = total_valor_a_pagar
+        return super(InscricaoAdmin, self).changelist_view(request, extra_context=extra_context)
+
+    
+        
 
 class EntradasAdmin(admin.ModelAdmin):
-    list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total', 'data']
+    list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total']  # Mantenha valor_total aqui
     search_fields = ['descricao']
     list_filter = ['data']
+    fieldsets = (
+        ('Entradas', {
+            'fields': ('descricao', 'valor_unitario', 'quantidade' )
+        }),
+    )
     change_list_template = "user/change_list_entradas.html"
 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        total_valor_entradas = Entradas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+        extra_context['total_valor_entradas'] = total_valor_entradas
+        return super(EntradasAdmin, self).changelist_view(request, extra_context=extra_context)
+
 class SaidasAdmin(admin.ModelAdmin):
-    list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total', 'data']
+    list_display = ['descricao', 'valor_unitario', 'quantidade', 'valor_total']
     search_fields = ['descricao']
-    list_filter = ['data']
+    list_filter = ['data','descricao']
     change_list_template = "user/change_list_saidas.html"
+
+    fieldsets = (
+        ('Saidas', {
+            'fields': ('descricao', 'valor_unitario', 'quantidade', )
+        }),
+    )
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        total_valor_saidas = Saidas.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
+        extra_context['total_valor_saidas'] = total_valor_saidas
+        return super(SaidasAdmin, self).changelist_view(request, extra_context=extra_context)
 
 # Registrando os modelos no Admin
 admin.site.register(Entradas, EntradasAdmin)
